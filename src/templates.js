@@ -16,7 +16,7 @@ export const TEMPLATES = [
     ffmpegFilters: [],
     textSlot: null,
     textStyle: null,
-    thumbnail: 'assets/thumbs/golden_hour.jpg'
+    thumbnail: 'assets/thumbs/golden_hour.png'
   },
   {
     id: 'night-out',
@@ -34,7 +34,7 @@ export const TEMPLATES = [
     ffmpegFilters: [],
     textSlot: null,
     textStyle: null,
-    thumbnail: 'assets/thumbs/night_out.jpg'
+    thumbnail: 'assets/thumbs/night_out.png'
   },
   {
     id: 'travel',
@@ -59,7 +59,7 @@ export const TEMPLATES = [
       color: '#ffffff',
       position: 'center'
     },
-    thumbnail: 'assets/thumbs/travel.jpg'
+    thumbnail: 'assets/thumbs/travel.png'
   }
 ];
 
