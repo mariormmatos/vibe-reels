@@ -1,0 +1,235 @@
+:root {
+  --bg: #0b0b0c;
+  --bg-elev: #17171a;
+  --bg-elev-2: #232327;
+  --fg: #f4f4f5;
+  --fg-dim: #a1a1aa;
+  --fg-subtle: #52525b;
+  --accent: #ffffff;
+  --danger: #ef4444;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --gap: 16px;
+  --gap-sm: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+body {
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  #app::before {
+    content: "Roda o telemóvel para continuar";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100dvh;
+    width: 100%;
+    font-size: 18px;
+    color: var(--fg-dim);
+  }
+  #app > * { display: none; }
+}
+
+/* --- Layout helpers --- */
+.screen {
+  padding: 24px var(--gap);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.screen h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.screen h2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--fg);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:disabled {
+  background: var(--bg-elev-2);
+  color: var(--fg-subtle);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--bg-elev);
+  color: var(--fg);
+}
+
+.btn-fixed-bottom {
+  position: sticky;
+  bottom: var(--gap);
+  margin-top: auto;
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--bg-elev);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.card:active {
+  background: var(--bg-elev-2);
+}
+
+.card-invalid {
+  background: color-mix(in srgb, var(--danger) 15%, var(--bg-elev));
+  border: 1px solid var(--danger);
+}
+
+.card-thumb {
+  width: 100%;
+  aspect-ratio: 9/16;
+  background: var(--bg-elev-2);
+  border-radius: var(--radius-sm);
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 12px;
+}
+
+/* --- Inputs --- */
+.input {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-elev);
+  color: var(--fg);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.input:focus {
+  border-color: var(--fg-dim);
+  outline: none;
+}
+
+.slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--bg-elev-2);
+  border-radius: 2px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--fg);
+  cursor: pointer;
+}
+
+/* --- Progress --- */
+.progress {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-elev);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--fg);
+  transition: width 0.2s ease-out;
+}
+
+/* --- Toast --- */
+.toast {
+  position: fixed;
+  bottom: calc(var(--gap) + var(--safe-bottom));
+  left: var(--gap);
+  right: var(--gap);
+  padding: 14px;
+  background: var(--bg-elev-2);
+  color: var(--fg);
+  border-radius: var(--radius);
+  text-align: center;
+  animation: fadeIn 0.2s;
+  z-index: 100;
+  max-width: 448px;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Overlay --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap);
+  gap: var(--gap);
+  z-index: 50;
+}
+
+/* --- Video preview --- */
+.preview-video {
+  width: 100%;
+  aspect-ratio: 9/16;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: #000;
+}
