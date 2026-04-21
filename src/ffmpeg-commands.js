@@ -71,7 +71,8 @@ function buildFilterComplex(template, numInputs, text) {
     const safe = text.replace(/'/g, "\\'").replace(/:/g, '\\:');
     const style = template.textStyle;
     const y = style.position === 'top' ? 'h*0.1' : style.position === 'bottom' ? 'h*0.85' : '(h-text_h)/2';
-    const offsetStart = template.slots.slice(0, template.textSlot).reduce((s, sl) => s + sl.duration, 0);
+    const tdForOffset = template.transition.duration;
+    const offsetStart = template.slots.slice(0, template.textSlot).reduce((s, sl) => s + sl.duration, 0) - template.textSlot * tdForOffset;
     const offsetEnd = offsetStart + template.slots[template.textSlot].duration;
     chains.push(`[concat]drawtext=text='${safe}':fontsize=${style.size}:fontcolor=${style.color}:x=(w-text_w)/2:y=${y}:enable='between(t,${offsetStart},${offsetEnd})':shadowcolor=black@0.6:shadowx=2:shadowy=2[out]`);
   } else {

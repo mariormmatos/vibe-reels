@@ -97,6 +97,23 @@ describe('buildAssemblyCommand', () => {
     expect(vcodec).toBe('libx264');
     expect(cmd).toContain('output.mp4');
   });
+
+  it('Travel drawtext window accounts for xfade compression', () => {
+    const template = getTemplate('travel');
+    const inputs = ['t0.mp4', 't1.mp4', 't2.mp4', 't3.mp4', 't4.mp4', 't5.mp4'];
+    const cmd = buildAssemblyCommand({ template, inputs, text: 'Lisboa' });
+    const fc = cmd[cmd.indexOf('-filter_complex') + 1];
+    expect(fc).toMatch(/between\(t,15\.?5?0*,18\.?5?0*\)/);
+  });
+
+  it('Xfade accumulated offsets for Travel', () => {
+    const template = getTemplate('travel');
+    const inputs = ['t0.mp4', 't1.mp4', 't2.mp4', 't3.mp4', 't4.mp4', 't5.mp4'];
+    const cmd = buildAssemblyCommand({ template, inputs, text: 'Lisboa' });
+    const fc = cmd[cmd.indexOf('-filter_complex') + 1];
+    expect(fc).toMatch(/offset=1\.700/);
+    expect(fc).toMatch(/offset=15\.500/);
+  });
 });
 
 describe('buildPipeline', () => {
@@ -115,5 +132,6 @@ describe('buildPipeline', () => {
     expect(pipeline[1].kind).toBe('trim');
     expect(pipeline[2].kind).toBe('photo-to-clip');
     expect(pipeline[pipeline.length - 1].kind).toBe('assembly');
+    expect(pipeline[5].args.filter(a => a === '-i')).toHaveLength(5);
   });
 });
