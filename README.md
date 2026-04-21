@@ -2,7 +2,7 @@
 
 PWA mobile-first para criar Reels de Instagram estéticos no iPhone.
 
-**Live:** https://ripth.github.io/vibe-reels/
+**Live:** https://mariormmatos.github.io/vibe-reels/
 
 ## Development
 

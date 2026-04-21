@@ -78,7 +78,7 @@
 
 **Tipo:** PWA 100% estática, client-side only. Zero backend.
 
-**Hosting:** GitHub Pages em `https://ripth.github.io/vibe-reels/` a partir do repo `vibe-reels`.
+**Hosting:** GitHub Pages em `https://mariormmatos.github.io/vibe-reels/` a partir do repo `vibe-reels`.
 
 **Runtime:**
 - HTML/CSS/JS vanilla. Total bundle inicial (sem FFmpeg): ~30 KB.
@@ -334,9 +334,9 @@ vibe-reels/
 
 ## 11. Deploy e CI/CD
 
-**Repo:** GitHub `ripth/vibe-reels`.
+**Repo:** GitHub `mariormmatos/vibe-reels`.
 **Branch strategy:** trunk-based, push direto para `main` (projecto solo).
-**Hosting:** GitHub Pages, path `/vibe-reels/` no domínio `ripth.github.io`.
+**Hosting:** GitHub Pages, path `/vibe-reels/` no domínio `mariormmatos.github.io`.
 **Workflow:**
 1. Push para `main` → GitHub Action corre `npm ci && npm test`.
 2. Se pass → build (copia `src/`, `assets/`, `index.html`, `style.css`, `manifest.json`, `service-worker.js` para `dist/`).

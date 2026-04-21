@@ -30,7 +30,7 @@ First end-to-end build. Target: iPhone Safari 16+ como PWA instalada.
 ### Manual actions pendentes
 
 - Task 20–21: correr `npm run gen:fixtures` após instalar `ffmpeg` (requer `winget install ffmpeg` em Windows) para ter fixtures de integração.
-- Task 23: `gh repo create ripth/vibe-reels --public --source . --remote origin --push` e activar Pages em Settings → Pages → GitHub Actions.
+- Task 23: `gh repo create mariormmatos/vibe-reels --public --source . --remote origin --push` e activar Pages em Settings → Pages → GitHub Actions.
 - Task 24: smoke test em iPhone Safari real a partir do URL público.
 
 ### Arquitectura

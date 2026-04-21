@@ -10,15 +10,18 @@ export function renderHome(state) {
 
   for (const t of TEMPLATES) {
     const card = el('div', {
-      class: 'card',
+      class: 'card card-home',
       onclick: () => {
         setState({ template: t, slots: new Array(t.slots.length).fill(null) });
         goto(t.textSlot !== null ? 'picker' : 'picker');
       }
     }, [
       el('div', { class: 'card-thumb', style: { backgroundImage: `url(${t.thumbnail})` } }),
-      el('h2', { textContent: t.name, style: { fontSize: '20px', color: 'var(--fg)', textTransform: 'none', letterSpacing: 0, marginBottom: '4px' } }),
-      el('p', { textContent: t.description, style: { color: 'var(--fg-dim)', fontSize: '14px' } })
+      el('div', { class: 'card-body' }, [
+        el('h2', { textContent: t.name, style: { fontSize: '20px', color: 'var(--fg)', textTransform: 'none', letterSpacing: 0 } }),
+        el('p', { textContent: t.description, style: { color: 'var(--fg-dim)', fontSize: '14px' } }),
+        el('p', { textContent: `${t.slots.length} slots · ${t.slots.reduce((s, sl) => s + sl.duration, 0)}s`, style: { color: 'var(--fg-subtle)', fontSize: '12px', marginTop: '4px' } })
+      ])
     ]);
     screen.appendChild(card);
   }

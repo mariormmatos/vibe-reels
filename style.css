@@ -139,6 +139,29 @@ body {
   margin-bottom: 12px;
 }
 
+/* Home template cards: horizontal layout, compact thumb */
+.card-home {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: var(--gap);
+  align-items: center;
+}
+
+.card-home .card-thumb {
+  width: 96px;
+  height: 170px;
+  aspect-ratio: auto;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.card-home .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 /* --- Inputs --- */
 .input {
   width: 100%;

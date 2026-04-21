@@ -244,7 +244,7 @@ Antes de fazer commit, verificar:
 
 PWA mobile-first para criar Reels de Instagram estéticos no iPhone.
 
-**Live:** https://ripth.github.io/vibe-reels/
+**Live:** https://mariormmatos.github.io/vibe-reels/
 
 ## Development
 
@@ -2417,24 +2417,24 @@ git commit -m "ci: add build script and GitHub Pages deploy workflow"
 - [ ] **Step 1: Create GitHub repo**
 
 ```bash
-gh repo create ripth/vibe-reels --public --source . --remote origin --push
+gh repo create mariormmatos/vibe-reels --public --source . --remote origin --push
 ```
 
-Or, if `gh` not installed: create `ripth/vibe-reels` on GitHub manually, then:
+Or, if `gh` not installed: create `mariormmatos/vibe-reels` on GitHub manually, then:
 
 ```bash
-git remote add origin https://github.com/ripth/vibe-reels.git
+git remote add origin https://github.com/mariormmatos/vibe-reels.git
 git branch -M main
 git push -u origin main
 ```
 
 - [ ] **Step 2: Enable Pages**
 
-Visit `https://github.com/ripth/vibe-reels/settings/pages`. Set Source to "GitHub Actions". Save.
+Visit `https://github.com/mariormmatos/vibe-reels/settings/pages`. Set Source to "GitHub Actions". Save.
 
 - [ ] **Step 3: Verify deploy**
 
-Wait for the Deploy workflow to finish. Visit `https://ripth.github.io/vibe-reels/`. App should load.
+Wait for the Deploy workflow to finish. Visit `https://mariormmatos.github.io/vibe-reels/`. App should load.
 
 - [ ] **Step 4: Add URL to README**
 
@@ -2456,7 +2456,7 @@ git push
 
 - [ ] **Step 1: Run the full manual smoke checklist on real iPhone**
 
-Open `https://ripth.github.io/vibe-reels/` on iPhone Safari. Verify:
+Open `https://mariormmatos.github.io/vibe-reels/` on iPhone Safari. Verify:
 - [ ] Primeira carga <3s em 4G.
 - [ ] Tap em "Adicionar ao Ecrã Principal" mostra ícone correcto.
 - [ ] Abrir como PWA → arranca standalone sem UI do browser.

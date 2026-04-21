@@ -83,6 +83,8 @@ async function validateAndPrep(file, slot) {
       return { file, thumb: dataUrl, startTime: 0, type: 'photo', slotDuration: slot.duration };
     }
   } catch (e) {
-    return { file, invalid: 'Este ficheiro não abre no browser.' };
+    console.error('[picker] thumb gen failed:', e);
+    const reason = (e && e.message) ? e.message : 'desconhecido';
+    return { file, invalid: `Este ficheiro não abre no browser (${reason}).` };
   }
 }
