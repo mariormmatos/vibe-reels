@@ -37,40 +37,72 @@ export async function makeVideoThumb(file, atSeconds = 0.1) {
   document.body.appendChild(video);
 
   const cleanup = () => {
+    try { video.pause(); } catch { /* ignore */ }
     video.src = '';
+    try { video.load(); } catch { /* ignore */ }
     video.remove();
     URL.revokeObjectURL(url);
   };
 
-  try {
-    // Wait for first frame decoded (readyState >= 2 / HAVE_CURRENT_DATA).
-    await new Promise((resolve, reject) => {
-      if (video.readyState >= 2) return resolve();
-      const done = () => { video.removeEventListener('loadeddata', done); video.removeEventListener('error', fail); resolve(); };
-      const fail = () => { video.removeEventListener('loadeddata', done); video.removeEventListener('error', fail); reject(new Error('video load failed')); };
-      video.addEventListener('loadeddata', done);
-      video.addEventListener('error', fail);
-      setTimeout(() => { video.removeEventListener('loadeddata', done); video.removeEventListener('error', fail); reject(new Error('video load timeout')); }, 10000);
-    });
+  const waitEvent = (name, ms, label) => new Promise((resolve, reject) => {
+    const done = () => { video.removeEventListener(name, done); video.removeEventListener('error', fail); clearTimeout(t); resolve(); };
+    const fail = () => { video.removeEventListener(name, done); video.removeEventListener('error', fail); clearTimeout(t); reject(new Error(`${label} error`)); };
+    const t = setTimeout(() => { video.removeEventListener(name, done); video.removeEventListener('error', fail); reject(new Error(`${label} timeout (rs=${video.readyState},vw=${video.videoWidth},vh=${video.videoHeight},dur=${video.duration})`)); }, ms);
+    video.addEventListener(name, done);
+    video.addEventListener('error', fail);
+  });
 
+  try {
+    // Step 1: metadata — usually instant, needed for duration/dimensions.
+    if (video.readyState < 1) {
+      await waitEvent('loadedmetadata', 15000, 'metadata');
+    }
+
+    // Step 2: force decode of first frame. On iOS PWA standalone, HEVC/4K clips
+    // often never fire `loadeddata` on their own — play()+pause() jolts the decoder.
+    if (video.readyState < 2) {
+      try {
+        const p = video.play();
+        if (p && typeof p.then === 'function') {
+          await Promise.race([
+            p,
+            new Promise((_, rej) => setTimeout(() => rej(new Error('play timeout')), 8000))
+          ]);
+        }
+      } catch (e) {
+        // play may reject (autoplay policy); continue — `loadeddata` may still fire.
+      }
+      try { video.pause(); } catch { /* ignore */ }
+    }
+
+    // Step 3: wait until we actually have a decoded current frame (HAVE_CURRENT_DATA).
+    if (video.readyState < 2) {
+      await waitEvent('loadeddata', 25000, 'decode');
+    }
+
+    // Step 4: seek to the thumbnail timestamp.
     const duration = Number.isFinite(video.duration) ? video.duration : atSeconds + 1;
     const targetTime = Math.min(atSeconds, Math.max(0, duration - 0.1));
 
     if (Math.abs(video.currentTime - targetTime) > 0.05) {
-      // iOS occasionally never fires `seeked` in standalone PWA — fall back to timeout.
       await new Promise(resolve => {
         const done = () => { video.removeEventListener('seeked', done); resolve(); };
         video.addEventListener('seeked', done);
         try { video.currentTime = targetTime; } catch { /* ignore */ }
+        // iOS sometimes never fires `seeked` — fall back to short timeout.
         setTimeout(done, 1500);
       });
     }
 
-    // Let the decoded frame paint before drawImage.
+    // Step 5: let the decoded frame paint before drawImage.
     await new Promise(r => requestAnimationFrame(r));
 
-    const vw = video.videoWidth || 1080;
-    const vh = video.videoHeight || 1920;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (!vw || !vh) {
+      throw new Error(`no video dimensions (rs=${video.readyState})`);
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = 270;
     canvas.height = 480;

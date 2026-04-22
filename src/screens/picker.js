@@ -14,18 +14,20 @@ export function renderPicker(state) {
     const slot = template.slots[i];
     const filled = slots[i];
     const invalid = filled && filled.invalid;
+    const loading = filled && filled.loading;
     const card = el('div', {
       class: `card${invalid ? ' card-invalid' : ''}`,
-      onclick: () => pickFile(i)
+      onclick: loading ? undefined : () => pickFile(i)
     }, [
       el('div', {
-        class: 'card-thumb',
+        class: `card-thumb${loading ? ' card-thumb-loading' : ''}`,
         style: filled && filled.thumb ? { backgroundImage: `url(${filled.thumb})` } : {}
-      }),
+      }, loading ? [el('div', { class: 'spinner' })] : []),
       el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } }, [
         el('span', { textContent: `${slot.type === 'video' ? 'Vídeo' : 'Foto'} ${i + 1}`, style: { fontWeight: 600 } }),
         el('span', { textContent: `${slot.duration}s`, style: { color: 'var(--fg-dim)', fontSize: '14px' } })
       ]),
+      loading && el('p', { textContent: 'A processar…', style: { color: 'var(--fg-dim)', fontSize: '13px', marginTop: '6px' } }),
       filled && filled.invalid && el('p', { textContent: filled.invalid, style: { color: 'var(--danger)', fontSize: '13px', marginTop: '6px' } })
     ]);
     screen.appendChild(card);
@@ -57,6 +59,13 @@ function pickFile(slotIndex) {
   input.onchange = async () => {
     const file = input.files[0];
     if (!file) return;
+    // Show loading state immediately so user knows something is happening.
+    {
+      const state = getState();
+      const slots = [...state.slots];
+      slots[slotIndex] = { file, loading: true };
+      setState({ slots });
+    }
     const slotMeta = await validateAndPrep(file, template.slots[slotIndex]);
     const state = getState();
     const slots = [...state.slots];
