@@ -10,8 +10,8 @@ export function renderExport(state) {
   ]);
   const logs = el('pre', {
     style: {
-      fontSize: '11px', color: 'var(--fg-subtle)', width: '100%', maxHeight: '120px',
-      overflow: 'hidden', whiteSpace: 'pre-wrap', fontFamily: 'monospace'
+      fontSize: '11px', color: 'var(--fg-subtle)', width: '100%', maxHeight: '200px',
+      overflow: 'auto', whiteSpace: 'pre-wrap', fontFamily: 'monospace', textAlign: 'left'
     },
     textContent: state.exportLog || 'A iniciar motor de vídeo...'
   });
@@ -32,9 +32,32 @@ let worker = null;
 
 async function startExport() {
   const state = getState();
-  setState({ exportStarted: true, exportError: null, exportProgress: 0, exportLog: 'A iniciar...' });
+  setState({ exportStarted: true, exportError: null, exportProgress: 0, exportLog: '[export] a arrancar worker…' });
 
-  worker = new Worker(new URL('../ffmpeg-worker.js', import.meta.url), { type: 'module' });
+  try {
+    worker = new Worker(new URL('../ffmpeg-worker.js', import.meta.url), { type: 'module' });
+  } catch (err) {
+    setState({ exportError: `Não foi possível iniciar o worker (${err?.message || err}).`, exportStarted: false });
+    return;
+  }
+
+  // Critical: without these, any failure in the worker's top-level import
+  // (CDN fetch, ESM parse, etc.) vanishes and the UI hangs at "A iniciar...".
+  worker.onerror = (ev) => {
+    const msg = ev.message || ev.filename || 'erro desconhecido no worker';
+    setState({
+      exportError: `Falha no motor de vídeo: ${msg}`,
+      exportStarted: false,
+      exportLog: (getState().exportLog || '') + `\n[worker.onerror] ${msg}`
+    });
+  };
+  worker.onmessageerror = (ev) => {
+    setState({
+      exportError: 'Erro de mensagem no worker (serialização).',
+      exportStarted: false,
+      exportLog: (getState().exportLog || '') + `\n[worker.onmessageerror]`
+    });
+  };
 
   const inputs = state.slots.map(s => ({
     file: s.file,
@@ -58,7 +81,7 @@ async function startExport() {
     } else if (type === 'log') {
       const prev = getState().exportLog;
       const line = e.data.message;
-      const next = (prev + '\n' + line).split('\n').slice(-8).join('\n');
+      const next = (prev + '\n' + line).split('\n').slice(-16).join('\n');
       setState({ exportLog: next });
     } else if (type === 'done') {
       setState({ exportBlob: e.data.blob, exportProgress: 100 });
