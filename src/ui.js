@@ -27,18 +27,26 @@ export async function makeVideoThumb(file, atSeconds = 0.1) {
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
   video.setAttribute('muted', '');
+  video.setAttribute('autoplay', '');
   video.setAttribute('preload', 'auto');
   video.muted = true;
   video.playsInline = true;
+  video.autoplay = true;
   video.preload = 'auto';
-  video.src = url;
-  // Attach off-screen — iOS skips decode on detached <video>.
-  video.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+  // iOS PWA standalone skips decode on offscreen/1px <video>. Keep it in the
+  // viewport at a real size but visually camouflaged (behind app, nearly
+  // transparent). 100×100 + opacity 0.01 + z-index -1 is the established
+  // workaround — iOS decodes as if it were a "real" video player.
+  video.style.cssText = 'position:fixed;top:0;left:0;width:100px;height:100px;z-index:-1;opacity:0.01;pointer-events:none;';
   document.body.appendChild(video);
+  video.src = url;
+  try { video.load(); } catch { /* ignore */ }
+
+  const diag = () => `rs=${video.readyState},vw=${video.videoWidth},vh=${video.videoHeight},dur=${video.duration},bf=${video.buffered.length ? video.buffered.end(0).toFixed(2) : 0}`;
 
   const cleanup = () => {
     try { video.pause(); } catch { /* ignore */ }
-    video.src = '';
+    video.removeAttribute('src');
     try { video.load(); } catch { /* ignore */ }
     video.remove();
     URL.revokeObjectURL(url);
@@ -46,20 +54,21 @@ export async function makeVideoThumb(file, atSeconds = 0.1) {
 
   const waitEvent = (name, ms, label) => new Promise((resolve, reject) => {
     const done = () => { video.removeEventListener(name, done); video.removeEventListener('error', fail); clearTimeout(t); resolve(); };
-    const fail = () => { video.removeEventListener(name, done); video.removeEventListener('error', fail); clearTimeout(t); reject(new Error(`${label} error`)); };
-    const t = setTimeout(() => { video.removeEventListener(name, done); video.removeEventListener('error', fail); reject(new Error(`${label} timeout (rs=${video.readyState},vw=${video.videoWidth},vh=${video.videoHeight},dur=${video.duration})`)); }, ms);
+    const fail = () => { video.removeEventListener(name, done); video.removeEventListener('error', fail); clearTimeout(t); reject(new Error(`${label} error (${diag()})`)); };
+    const t = setTimeout(() => { video.removeEventListener(name, done); video.removeEventListener('error', fail); reject(new Error(`${label} timeout (${diag()})`)); }, ms);
     video.addEventListener(name, done);
     video.addEventListener('error', fail);
   });
 
   try {
-    // Step 1: metadata — usually instant, needed for duration/dimensions.
+    // Step 1: metadata — duration/dimensions.
     if (video.readyState < 1) {
       await waitEvent('loadedmetadata', 15000, 'metadata');
     }
 
-    // Step 2: force decode of first frame. On iOS PWA standalone, HEVC/4K clips
-    // often never fire `loadeddata` on their own — play()+pause() jolts the decoder.
+    // Step 2: force decode of first frame. autoplay attribute + explicit play()
+    // pair: iOS PWA sometimes honors autoplay attr even when scripted play() is
+    // throttled. We swallow rejection and hope loadeddata fires anyway.
     if (video.readyState < 2) {
       try {
         const p = video.play();
@@ -70,15 +79,17 @@ export async function makeVideoThumb(file, atSeconds = 0.1) {
           ]);
         }
       } catch (e) {
-        // play may reject (autoplay policy); continue — `loadeddata` may still fire.
+        // Autoplay blocked — loadeddata may still arrive via the autoplay attr.
       }
-      try { video.pause(); } catch { /* ignore */ }
     }
 
-    // Step 3: wait until we actually have a decoded current frame (HAVE_CURRENT_DATA).
+    // Step 3: wait until we have a decoded current frame (HAVE_CURRENT_DATA).
     if (video.readyState < 2) {
       await waitEvent('loadeddata', 25000, 'decode');
     }
+
+    // Pause once we have a frame so the video doesn't keep advancing.
+    try { video.pause(); } catch { /* ignore */ }
 
     // Step 4: seek to the thumbnail timestamp.
     const duration = Number.isFinite(video.duration) ? video.duration : atSeconds + 1;
@@ -89,18 +100,18 @@ export async function makeVideoThumb(file, atSeconds = 0.1) {
         const done = () => { video.removeEventListener('seeked', done); resolve(); };
         video.addEventListener('seeked', done);
         try { video.currentTime = targetTime; } catch { /* ignore */ }
-        // iOS sometimes never fires `seeked` — fall back to short timeout.
         setTimeout(done, 1500);
       });
     }
 
     // Step 5: let the decoded frame paint before drawImage.
     await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => requestAnimationFrame(r));
 
     const vw = video.videoWidth;
     const vh = video.videoHeight;
     if (!vw || !vh) {
-      throw new Error(`no video dimensions (rs=${video.readyState})`);
+      throw new Error(`no video dimensions (${diag()})`);
     }
 
     const canvas = document.createElement('canvas');
